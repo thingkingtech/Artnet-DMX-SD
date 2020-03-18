@@ -16,6 +16,8 @@ Data will be stored on SD card like DATA0, DATA1, DATA2 etc.
 
 Project modified from: https://github.com/tangophi/Artnet_DMX_SD_Card to work using FastLED library. Refer to this link for troubleshooting.
 
+We used a Teensy 3.6 for PLAY_DMX and Arduino D1 mini for storing (with circuit detailed in link above)
+
 Currently PLAY_DMX is set up to loop animations for a long time.
 
 NOTE: Printing out values to Serial while storing animations will cause animations to lag.
