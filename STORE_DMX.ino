@@ -24,7 +24,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <ArtnetWifi.h>
-#include <FastLED.h>
 
 /***********************************************************
 /* These settings need to be changed according to your setup
@@ -42,14 +41,14 @@ const char* ssid = "ThingkingStudio(Pty)Ltd Sonic";         // CHANGE FOR YOUR S
 const char* password = "Kelvin!273"; // CHANGE FOR YOUR SETUP
 
 // LED settings
-const int numLeds = 120; // CHANGE FOR YOUR SETUP
+const int numLeds = 300; // CHANGE FOR YOUR SETUP
 //const int numberOfChannels = numLeds * 3; // Total number of channels you want to receive (1 led = 3 channels)
 //const byte dataPin = 3;
-CRGB leds[numLeds];
+//CRGB leds[numLeds];
 
 // Madrix settings
 const int firstUniverse =  1;      // CHANGE FOR YOUR SETUP
-const int lastUniverse   = 1;      // CHANGE FOR YOUR SETUP     
+const int lastUniverse   = 2;      // CHANGE FOR YOUR SETUP     
 
 /************************************************************/
 
@@ -150,12 +149,6 @@ void setup()
   
   ConnectWifi();
   artnet.begin();
-  FastLED.addLeds<WS2812B, PIN_LED, GRB>(leds, numLeds);
-  initTest();
-  for (int i = 0 ; i < numLeds ; i++){
-    leds[i]=CRGB(0, 0, 0);
-  }
-  FastLED.show();
   
   attachInterrupt (PIN_START_BUTTON,   buttonHandlerStart,   RISING);
   attachInterrupt (PIN_STOP_BUTTON,    buttonHandlerStop,    RISING);
@@ -237,7 +230,7 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
   // But increment it back up.
   universe++;
 
-  Serial.printf("DMX recd: univ=%3d : len=%3d\n", universe, length);
+  //Serial.printf("DMX recd: univ=%3d : len=%3d\n", universe, length);
   
   // Store which universe has got in now
   if ((universe >= firstUniverse) && (universe <= lastUniverse))
@@ -271,7 +264,7 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
     
     if (bufferIndex < numberOfChannels)
     {
-      Serial.printf("bufI=%3d : i=%3d : d=%d\n", bufferIndex, i, data[i]); 
+      //Serial.printf("bufI=%3d : i=%3d : d=%d\n", bufferIndex, i, data[i]); 
       channelBuffer[bufferIndex++] = byte(data[i]);
     }
       
@@ -281,32 +274,9 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
   // is received and if we are still recording
   if (recording && storeFrame)
   { 
-    Serial.printf("Into file: numChannels=%3d : maxUnivs=%d : bufIdx=%3d \n", numberOfChannels, maxUniverses, bufferIndex-1);    
+    //Serial.printf("Into file: numChannels=%3d : maxUnivs=%d : bufIdx=%3d \n", numberOfChannels, maxUniverses, bufferIndex-1);    
     datafile.write(channelBuffer, numberOfChannels);
     memset(universesReceived, 0, maxUniverses);
     bufferIndex = 0;
   } 
-}
-
-void initTest()
-{
-  for (int i = 0 ; i < numLeds-1 ; i++) {
-    leds[i] = CRGB(127, 0, 0);
-  }
-  FastLED.show();
-  delay(500);
-  for (int i = 0 ; i < numLeds-1 ; i++) {
-    leds[i] = CRGB(0, 127, 0);
-  }
-  FastLED.show();
-  delay(500);
-  for (int i = 0 ; i < numLeds-1 ; i++) {
-    leds[i] = CRGB(0, 0, 127);
-  }
-  FastLED.show();
-  delay(500);
-  for (int i = 0 ; i < numLeds-1 ; i++) {
-    leds[i] = CRGB(0, 0, 0);
-  }
-  FastLED.show();
 }

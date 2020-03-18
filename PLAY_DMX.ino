@@ -14,11 +14,12 @@
 #include <SD.h>
 #include <FastLED.h>
 
+
 /***********************************************************
 /* These settings need to be changed according to your setup
 /************************************************************/
 
-#define FRAME_TIME            50  // CHANGE FOR YOUR SETUP.  Should be the same as the Frame Time in Madrix -> Preferences-> Device Manager-> DMX Devices config.
+#define FRAME_TIME            30  // CHANGE FOR YOUR SETUP.  Should be the same as the Frame Time in Madrix -> Preferences-> Device Manager-> DMX Devices config.
 
 #define PIN_PREVIOUS_BUTTON   4
 #define PIN_NEXT_BUTTON       5
@@ -26,7 +27,7 @@
 #define PIN_LED               3
 
 // Neopixel settings
-const int numLeds = 120;          // CHANGE FOR YOUR SETUP.
+const int numLeds = 300;          // CHANGE FOR YOUR SETUP.
 
 /************************************************************/
 
@@ -47,6 +48,28 @@ int  totalFilesCount  = 0;
 volatile bool prevFile = false;
 volatile bool nextFile = false;
 
+void initTest()
+{
+  for (int i = 0 ; i < numLeds-1 ; i++) {
+    leds[i] = CRGB(127, 0, 0);
+  }
+  FastLED.show();
+  delay(500);
+  for (int i = 0 ; i < numLeds-1 ; i++) {
+    leds[i] = CRGB(0, 127, 0);
+  }
+  FastLED.show();
+  delay(500);
+  for (int i = 0 ; i < numLeds-1 ; i++) {
+    leds[i] = CRGB(0, 0, 127);
+  }
+  FastLED.show();
+  delay(500);
+  for (int i = 0 ; i < numLeds-1 ; i++) {
+    leds[i] = CRGB(0, 0, 0);
+  }
+  FastLED.show();
+}
 
 void buttonHandlerPrevious()
 {
@@ -72,17 +95,44 @@ void setup()
   FastLED.addLeds<WS2812B, PIN_LED, GRB>(leds, numLeds);
   initTest();
   
-  if (!SD.begin(PIN_SD_CS)) {
-    Serial.println("SD card initialization failed!");
+  while (fail == 0){
+    if (!SD.begin(PIN_SD_CS)) {
+      Serial.println("SD card initialization failed!");
+        int hue = 0;
+  for (int k=0; k<numLeds-1; k++){
+    if (hue < 255 || hue == 255){
+      fill_solid(leds, numLeds-1, CHSV(hue,255,255));
+      hue++;
+      FastLED.show();
+      delay(10);
+    }
+    else{
+      hue=0;
+ 
+    }
+  for (int k=0; k<numLeds-1; k++){
+    if (hue >0 || hue == 0){
+      fill_solid(leds, numLeds-1, CHSV(hue,255,255));
+      hue--;
+      FastLED.show();
+      delay(10);
+    }
+    else{
+      hue=255;
+ 
+    }
   }
-  else
-  {
-    Serial.println("SD card initialization done.");
+  }
+    }
+    else
+    {
+      Serial.println("SD card initialization done.");
+      fail = 1;
+    }
   }
   
-//  leds.begin();
-//  initTest();
-  
+
+
   attachInterrupt (PIN_PREVIOUS_BUTTON,  buttonHandlerPrevious,  RISING);
   attachInterrupt (PIN_NEXT_BUTTON,      buttonHandlerNext,      RISING);
 
@@ -111,26 +161,26 @@ void setup()
 void loop()
 {
   // Close the current file and open the previous file
-  if (prevFile)
-  {
-    datafile.close();
-
-    if (--fileNameSuffix < 0)
-    {
-      fileNameSuffix = totalFilesCount - 1;
-    }
-
-    memset(fileNameFull, 0, 10);
-    sprintf(fileNameFull, "data%d", fileNameSuffix);
-
-    Serial.print("Opening ");
-    Serial.println(fileNameFull);
-    
-    datafile = SD.open(fileNameFull, FILE_READ);
-
-    delay(100);
-    prevFile = false;
-  }
+//  if (prevFile)
+//  {
+//    datafile.close();
+//
+//    if (--fileNameSuffix < 0)
+//    {
+//      fileNameSuffix = totalFilesCount - 1;
+//    }
+//
+//    memset(fileNameFull, 0, 10);
+//    sprintf(fileNameFull, "data%d", fileNameSuffix);
+//
+//    Serial.print("Opening ");
+//    Serial.println(fileNameFull);
+//    
+//    datafile = SD.open(fileNameFull, FILE_READ);
+//
+//    delay(100);
+//    prevFile = false;
+//  }
 
   // Close the curent file and open the next file
   if (nextFile)
@@ -158,41 +208,31 @@ void loop()
   // the file pointer to the beginning of the file.
   if (datafile.available())
   {
-    //Serial.println("data available here!");
-    datafile.read(channelBuffer, numberOfChannels);
-    for (int i = 0; i < numLeds; i++){
-      leds[i]=CRGB(channelBuffer[(i) * 3], channelBuffer[(i * 3) + 1], channelBuffer[(i * 3) + 2]);
-      Serial.println(channelBuffer[(i) * 3]);
+      for (int t=0;t<50000;t++){
+         if (datafile.available())
+          {   
+          //Serial.println("data available here!");
+          datafile.read(channelBuffer, numberOfChannels);
+          for (int i = 0; i < numLeds-1; i++){
+            leds[i]=CRGB(channelBuffer[(i) * 3], channelBuffer[(i * 3) + 1], channelBuffer[(i * 3) + 2]);
+            //Serial.println(channelBuffer[(i) * 3]);
+          }
+          FastLED.show();
+          delay(FRAME_TIME);
     }
-    FastLED.show();
-    delay(FRAME_TIME);
+         else
+            {
+           //Serial.println("No data available...");
+             datafile.seek(0);
+            }
   }
+  }
+  
   else
   {
     //Serial.println("No data available...");
     datafile.seek(0);
   }
-}
-
-void initTest()
-{
-  for (int i = 0 ; i < numLeds-1 ; i++) {
-    leds[i] = CRGB(127, 0, 0);
-  }
-  FastLED.show();
-  delay(500);
-  for (int i = 0 ; i < numLeds-1 ; i++) {
-    leds[i] = CRGB(0, 127, 0);
-  }
-  FastLED.show();
-  delay(500);
-  for (int i = 0 ; i < numLeds-1 ; i++) {
-    leds[i] = CRGB(0, 0, 127);
-  }
-  FastLED.show();
-  delay(500);
-  for (int i = 0 ; i < numLeds-1 ; i++) {
-    leds[i] = CRGB(0, 0, 0);
-  }
-  FastLED.show();
+  nextFile=true;
+  delay(10);
 }
