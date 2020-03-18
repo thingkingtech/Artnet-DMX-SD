@@ -8,7 +8,7 @@ Ensure ArtAdress is OFF, Send Full Frames is OFF, PreSync and PostSync is OFF
 STORE_DMX needs to be configured with number of Universes used (start = 1, max = DEPENDS)
 PLAY_DMX needs to be configured with number of leds, data_pin, and frame rate recorded at (setup in MADRIX).
 
-NOTE: Use Arduino ESP8662 library v2.50 to program STORE_DMX
+NOTE: Use Arduino ESP8266 library v2.50 to program STORE_DMX
 
 STORE_DMX will only work if connected to Arduino Serial Monitor - use the monitor to check IP address and SD card initialization.
 
